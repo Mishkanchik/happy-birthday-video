@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Відео</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- М'яке фонове сяйво -->
+  <div class="ambient-glow" id="ambientGlow"></div>
+
+  <!-- Головна сцена — тільки відео у фоторамці -->
+  <main class="main-stage">
+
+    <div class="photo-frame-wrapper frame-gold" id="frameContainer">
+      <!-- Зовнішній багет (рама) -->
+      <div class="frame-outer-border">
+        <!-- Внутрішнє матове паспарту -->
+        <div class="frame-passepartout">
+          <!-- Внутрішній декоративний кант -->
+          <div class="frame-inner-bevel">
+
+            <!-- Екран телефонного відео (пропорції 9:16) -->
+            <div class="screen-viewport" id="screenViewport">
+
+              <!-- Заглушка, якщо відео ще не поклали в папку -->
+              <div class="placeholder-overlay" id="placeholderOverlay">
+                <div class="placeholder-content">
+                  <div class="placeholder-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                      <rect x="5" y="2" width="14" height="20" rx="3"/>
+                      <polygon points="10,9 15,12 10,15" fill="currentColor"/>
+                    </svg>
+                  </div>
+                  <h3>Очікування відео...</h3>
+                  <p>Покладіть файл <code>video.mp4</code> у цю папку</p>
+                </div>
+              </div>
+
+              <!-- Відео з папки -->
+              <video id="mainVideo" playsinline preload="auto">
+                <source src="video.mp4">
+                <source src="video.MOV">
+                <source src="video.mov">
+                <source src="video.webm">
+                Ваш браузер не підтримує відео.
+              </video>
+
+              <!-- Індикатор Play / Pause -->
+              <div class="play-state-indicator" id="playIndicator">
+                <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5,3 19,12 5,21"/>
+                </svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="4" width="4" height="16" rx="1"/>
+                  <rect x="14" y="4" width="4" height="16" rx="1"/>
+                </svg>
+              </div>
+
+              <!-- Скляний блік поверх відео -->
+              <div class="glass-glare"></div>
+
+              <!-- Плавні автоприховані контролери -->
+              <div class="video-controls-overlay" id="videoControls">
+                
+                <!-- Прогрес-бар -->
+                <div class="progress-bar-container" id="progressContainer">
+                  <div class="progress-buffered" id="progressBuffered"></div>
+                  <div class="progress-filled" id="progressFilled"></div>
+                  <div class="progress-thumb" id="progressThumb"></div>
+                </div>
+
+                <!-- Лінійка кнопок -->
+                <div class="controls-row">
+                  <div class="left-controls">
+                    <button class="ctrl-btn" id="btnPlayPause" title="Відтворити / Пауза (Пробіл)">
+                      <svg class="icon-ctrl-play" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                        <polygon points="6,4 19,12 6,20"/>
+                      </svg>
+                      <svg class="icon-ctrl-pause" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                        <rect x="6" y="4" width="4" height="16" rx="1"/>
+                        <rect x="14" y="4" width="4" height="16" rx="1"/>
+                      </svg>
+                    </button>
+
+                    <div class="volume-container">
+                      <button class="ctrl-btn" id="btnMute" title="Звук (M)">
+                        <svg class="icon-volume-high" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/>
+                          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                        </svg>
+                        <svg class="icon-volume-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/>
+                          <line x1="23" y1="9" x2="17" y2="15"/>
+                          <line x1="17" y1="9" x2="23" y2="15"/>
+                        </svg>
+                      </button>
+                      <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.05" value="1">
+                    </div>
+
+                    <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
+                  </div>
+
+                  <div class="right-controls">
+                    <button class="ctrl-btn" id="btnLoop" title="Повторювати безперервно">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <polyline points="17 1 21 5 17 9"/>
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                        <polyline points="7 23 3 19 7 15"/>
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                      </svg>
+                    </button>
+
+                    <button class="ctrl-btn" id="btnFullscreen" title="На весь екран (F)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div> <!-- /.screen-viewport -->
+
+          </div> <!-- /.frame-inner-bevel -->
+        </div> <!-- /.frame-passepartout -->
+      </div> <!-- /.frame-outer-border -->
+    </div> <!-- /.photo-frame-wrapper -->
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

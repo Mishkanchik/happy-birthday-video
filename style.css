@@ -1,0 +1,489 @@
+/* ============================================================
+   ВІДЕО-ПЛЕЄР У ФОТОРАМЦІ (ТІЛЬКИ ВІДЕО ТА РАМКА)
+   ============================================================ */
+
+:root {
+  --bg-color: #0b0d12;
+  --bg-gradient: radial-gradient(circle at 50% 50%, #171b24 0%, #080a0e 100%);
+  --accent-gold: #d4af37;
+  --accent-gold-light: #fbeea4;
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --glass-bg: rgba(18, 22, 30, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --border-radius-base: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  position: relative;
+}
+
+/* ==========================================
+   АМБІЄНТНЕ СЯЙВО НА ФОНІ
+   ========================================== */
+.ambient-glow {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 550px;
+  height: 850px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.22) 0%, rgba(130, 90, 20, 0.08) 50%, transparent 75%);
+  filter: blur(75px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ==========================================
+   ГОЛОВНА ОБЛАСТЬ
+   ========================================== */
+.main-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+  padding: 20px;
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================================
+   КОНСТРУКЦІЯ ФОТОРАМКИ (ЗОЛОТИЙ БАГЕТ + ПАСПАРТУ)
+   ============================================================ */
+
+.photo-frame-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 94vh;
+}
+
+/* Багет (зовнішня рама з рельєфом та металевим переливом) */
+.frame-outer-border {
+  position: relative;
+  border-radius: var(--border-radius-base);
+  padding: 16px;
+  background: linear-gradient(135deg, 
+    #7a5913 0%, 
+    #e8c869 20%, 
+    #fff4b8 35%, 
+    #b88a24 55%, 
+    #5c410b 75%, 
+    #e1be5f 90%, 
+    #8f6a1a 100%
+  );
+  box-shadow: 
+    0 30px 80px -10px rgba(0, 0, 0, 0.9),
+    0 12px 30px rgba(0, 0, 0, 0.6),
+    inset 0 2px 4px rgba(255, 255, 255, 0.7),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.85);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.frame-outer-border:hover {
+  box-shadow: 
+    0 35px 95px -10px rgba(0, 0, 0, 0.95),
+    0 15px 35px rgba(0, 0, 0, 0.7),
+    inset 0 2px 4px rgba(255, 255, 255, 0.8),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.85);
+}
+
+/* Паспарту (внутрішнє художнє матове поле навколо фото) */
+.frame-passepartout {
+  position: relative;
+  border-radius: calc(var(--border-radius-base) - 6px);
+  padding: 18px;
+  background: radial-gradient(circle at 50% 50%, #faf8f5 0%, #ebe4d5 100%);
+  box-shadow: 
+    inset 0 3px 12px rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Внутрішній тонкий золотий кант */
+.frame-inner-bevel {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid #b88a24;
+  box-shadow: 
+    0 0 0 1px #59400f,
+    inset 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================================
+   ВІДЕО-ЕКРАН ТЕЛЕФОНУ (9:16)
+   ============================================================ */
+
+.screen-viewport {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  width: auto;
+  height: clamp(480px, 78vh, 840px);
+  background: #000;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Власне відео */
+#mainVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+
+/* Скляний відблиск поверх відео для реалізму фотографії */
+.glass-glare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.04) 28%,
+    rgba(255, 255, 255, 0) 55%
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ============================================================
+   ЗАГЛУШКА (ЯКЩО ВІДЕО ЩЕ НЕ ДОДАНО В ПАПКУ)
+   ============================================================ */
+
+.placeholder-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1b1f29 0%, #0d1016 100%);
+  color: #fff;
+  z-index: 6;
+  text-align: center;
+  padding: 24px;
+  transition: opacity 0.35s ease;
+}
+
+.placeholder-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.placeholder-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 260px;
+}
+
+.placeholder-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-gold);
+}
+
+.placeholder-content h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.placeholder-content p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.placeholder-content code {
+  color: var(--accent-gold-light);
+  background: rgba(212, 175, 55, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+/* ============================================================
+   СПЛАШ PLAY / PAUSE
+   ============================================================ */
+
+.play-state-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 15;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.play-state-indicator.animate {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.play-state-indicator svg {
+  width: 32px;
+  height: 32px;
+  display: none;
+}
+
+.play-state-indicator.show-play .icon-play {
+  display: block;
+}
+
+.play-state-indicator.show-pause .icon-pause {
+  display: block;
+}
+
+/* ============================================================
+   КОНТРОЛЕРИ ВІДЕО (ПЛАВНЕ АВТОПРИХОВУВАННЯ)
+   ============================================================ */
+
+.video-controls-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 14px 14px 14px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.screen-viewport:hover .video-controls-overlay,
+.video-controls-overlay.active,
+.screen-viewport.paused .video-controls-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Прогрес бар */
+.progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  transition: height 0.15s ease;
+}
+
+.progress-bar-container:hover {
+  height: 8px;
+}
+
+.progress-buffered {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+  width: 0%;
+}
+
+.progress-filled {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #d4af37, #fbeea4);
+  border-radius: 4px;
+  width: 0%;
+}
+
+.progress-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+  transition: transform 0.15s ease;
+}
+
+.progress-bar-container:hover .progress-thumb {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Кнопки */
+.controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+}
+
+.left-controls, .right-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ctrl-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.ctrl-btn svg {
+  display: block;
+}
+
+/* Play/Pause іконки */
+#btnPlayPause .icon-ctrl-pause {
+  display: none;
+}
+.playing #btnPlayPause .icon-ctrl-play {
+  display: none;
+}
+.playing #btnPlayPause .icon-ctrl-pause {
+  display: block;
+}
+
+/* Volume іконки */
+#btnMute .icon-volume-muted {
+  display: none;
+}
+.muted #btnMute .icon-volume-high {
+  display: none;
+}
+.muted #btnMute .icon-volume-muted {
+  display: block;
+}
+
+.volume-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.volume-slider {
+  width: 50px;
+  height: 4px;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+}
+
+.time-display {
+  font-size: 0.76rem;
+  color: #e5e7eb;
+  font-variant-numeric: tabular-nums;
+  margin-left: 4px;
+}
+
+.ctrl-btn.active-loop {
+  color: var(--accent-gold);
+}
+
+/* ============================================================
+   ПОВНОЕКРАННИЙ РЕЖИМ
+   ============================================================ */
+.screen-viewport:fullscreen {
+  aspect-ratio: auto;
+  width: 100vw;
+  height: 100vh;
+}
+
+.screen-viewport:-webkit-full-screen {
+  aspect-ratio: auto;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ============================================================
+   АДАПТИВНІСТЬ ДЛЯ ЕКРАНІВ
+   ============================================================ */
+@media (max-height: 720px) {
+  .screen-viewport {
+    height: 70vh;
+  }
+  .frame-outer-border {
+    padding: 10px;
+  }
+  .frame-passepartout {
+    padding: 10px;
+  }
+}
