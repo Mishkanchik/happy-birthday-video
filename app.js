@@ -31,9 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. ПЕРЕВІРКА ТА ЗАВАНТАЖЕННЯ ВІДЕО З ПАПКИ
   // ==========================================
 
+  function updateAspectRatio() {
+    if (video.videoWidth && video.videoHeight) {
+      screenViewport.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+      screenViewport.style.setProperty('--video-aspect', `${video.videoWidth} / ${video.videoHeight}`);
+    }
+  }
+
   function onVideoSuccess() {
     isVideoLoaded = true;
     placeholderOverlay.classList.add('hidden');
+    updateAspectRatio();
     updateTimeDisplay();
     if (checkInterval) {
       clearInterval(checkInterval);
@@ -41,12 +49,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  video.addEventListener('loadedmetadata', () => {
+    updateAspectRatio();
+    onVideoSuccess();
+  });
   video.addEventListener('loadeddata', onVideoSuccess);
-  video.addEventListener('loadedmetadata', onVideoSuccess);
   video.addEventListener('canplay', onVideoSuccess);
+  video.addEventListener('resize', updateAspectRatio);
 
   // Якщо відео вже завантажилося до спрацьовування слухачів
   if (video.readyState >= 1) {
+    updateAspectRatio();
     onVideoSuccess();
   }
 

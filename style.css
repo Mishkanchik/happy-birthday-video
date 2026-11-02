@@ -78,6 +78,7 @@ body {
   flex-direction: column;
   align-items: center;
   max-height: 94vh;
+  max-width: 94vw;
 }
 
 /* Багет (зовнішня рама з рельєфом та металевим переливом) */
@@ -136,27 +137,30 @@ body {
 }
 
 /* ============================================================
-   ВІДЕО-ЕКРАН ТЕЛЕФОНУ (9:16)
+   ВІДЕО-ЕКРАН ТЕЛЕФОНУ (АДАПТИВНИЙ ПІД РЕАЛЬНИЙ РОЗМІР ВІДЕО)
    ============================================================ */
 
 .screen-viewport {
   position: relative;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: var(--video-aspect, 3 / 4);
   width: auto;
-  height: clamp(480px, 78vh, 840px);
+  height: clamp(380px, 78vh, 820px);
+  max-height: calc(94vh - 72px);
+  max-width: calc(94vw - 72px);
   background: #000;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: aspect-ratio 0.25s ease;
 }
 
-/* Власне відео */
+/* Власне відео — повне вміщення без обрізання країв */
 #mainVideo {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain; /* Жоден піксель не обрізається! */
   display: block;
   background: #000;
 }
